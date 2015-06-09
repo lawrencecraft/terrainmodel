@@ -5,6 +5,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"math"
 	"math/rand"
+	"sync"
 	"time"
 )
 
@@ -102,22 +103,40 @@ func (t *Terrain) Generate(roughness float32, x0y0 uint16, xmaxy0 uint16, x0ymax
 		log.Debug("Size ", sideLength, " halfsize:", halfSize)
 
 		// Square
+		var squareWg sync.WaitGroup
 		for x := halfSize; x < t.max; x += sideLength {
 			for y := halfSize; y < t.max; y += sideLength {
-				offset := int(rand.Float32()*float32(offsetMultiplier)*2.0) - offsetMultiplier
-				log.Debug("Setting square: ", x, ",", y, "with offset", offset)
-				t.SetSquare(x, y, offset, halfSize)
+				// Because of the way go handles for loops, these must be reassigned
+				ilx := x
+				ily := y
+				squareWg.Add(1)
+				go func() {
+					defer squareWg.Done()
+					offset := int(rand.Float32()*float32(offsetMultiplier)*2.0) - offsetMultiplier
+					log.Debug("Setting square: ", ilx, ",", ily, "with offset", offset)
+					t.SetSquare(ilx, ily, offset, halfSize)
+				}()
+			}
+		}
+		squareWg.Wait()
+
+		// Diamond
+		var diamondWg sync.WaitGroup
+		for y := uint16(0); y < t.max; y += halfSize {
+			for x := (y + halfSize) % sideLength; x < t.max; x += sideLength {
+				ilx := x
+				ily := y
+				diamondWg.Add(1)
+				go func() {
+					defer diamondWg.Done()
+					offset := int(rand.Float32()*float32(offsetMultiplier)*2.0) - offsetMultiplier
+					log.Debug("Setting diamond: ", x, ",", y, " with offset ", offset)
+					t.SetDiamond(ilx, ily, offset, halfSize)
+				}()
 			}
 		}
 
-		// Diamond
-		for y := uint16(0); y < t.max; y += halfSize {
-			for x := (y + halfSize) % sideLength; x < t.max; x += sideLength {
-				offset := int(rand.Float32()*float32(offsetMultiplier)*2.0) - offsetMultiplier
-				log.Debug("Setting diamond: ", x, ",", y, " with offset ", offset)
-				t.SetDiamond(x, y, offset, halfSize)
-			}
-		}
+		diamondWg.Wait()
 
 		iteration += 1
 		offsetMultiplier /= 2

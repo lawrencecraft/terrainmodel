@@ -8,7 +8,12 @@ import (
 	"image"
 	"image/color"
 	"os"
+	"runtime"
 )
+
+func init() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+}
 
 func main() {
 	i := flag.Uint("size", 3, "Set the map size in multiples of 2 (total will be 2^n + 1)")
