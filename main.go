@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"golang.org/x/image/bmp"
 	"image"
@@ -12,30 +11,32 @@ import (
 
 func main() {
 	i := flag.Uint("size", 3, "Set the map size in multiples of 2 (total will be 2^n + 1)")
-	colorValue := flag.Int("color", 32725, "Color to make outputted gif")
 	path := flag.String("path", "test.bmp", "Filename to write to")
 	dry := flag.Bool("dry", false, "Dry run (don't create image, just print size)")
-	verbose := flag.Bool("v", false, "verbose")
-	veryverbose := flag.Bool("vv", false, "very verbose")
+	loglevel := flag.String("loglevel", "Info", "Log level. Can be Debug, Info, Warn, Error, Fatal, or Panic")
 	flag.Parse()
 
-	if *colorValue > 65535 {
-		fmt.Println("Color must be less than or equal to 65535")
-		return
-	}
-
-	switch {
-	case *veryverbose:
+	switch *loglevel {
+	case "Debug":
 		log.SetLevel(log.DebugLevel)
-	case *verbose:
+	case "Info":
 		log.SetLevel(log.InfoLevel)
-	default:
+	case "Warn":
 		log.SetLevel(log.WarnLevel)
+	case "Error":
+		log.SetLevel(log.ErrorLevel)
+	case "Fatal":
+		log.SetLevel(log.FatalLevel)
+	case "Panic":
+		log.SetLevel(log.PanicLevel)
+	default:
+		log.Fatal("Unknown log level. Valid values are Debug, Info, Warn, Error, Fatal, or Panic. Supplied value: ", *loglevel)
+		return // Unnecessary, but do so just in case the former one didn't
 	}
 
 	t := InitializeTerrain(uint16(*i), 65535)
 
-	fmt.Println("Generating terrain of size", t.max)
+	log.Info("Generating terrain of size ", t.max)
 	t.Generate(0.3, 32767, 32767, 32767, 32767)
 
 	if *dry {
