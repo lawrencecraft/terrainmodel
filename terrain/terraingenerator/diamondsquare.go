@@ -20,7 +20,7 @@ func NewDiamondSquareGenerator(roughness float32, x int, y int) *DiamondSquareGe
 	return &DiamondSquareGenerator{x: x, y: y, scale: scale, roughness: roughness}
 }
 
-func IncrementAverage(x uint16, y uint16, t *terrain.Terrain, currentCount int, currentSum int) (int, int) {
+func incrementAverage(x uint16, y uint16, t *terrain.Terrain, currentCount int, currentSum int) (int, int) {
 	v, e := t.GetHeight(x, y)
 	if e == nil {
 		return currentCount + 1, currentSum + int(v)
@@ -28,7 +28,7 @@ func IncrementAverage(x uint16, y uint16, t *terrain.Terrain, currentCount int, 
 	return currentCount, currentSum
 }
 
-func NormalizeOffset(avg uint16, offset int) uint16 {
+func normalizeOffset(avg uint16, offset int) uint16 {
 	norm := int(avg) + offset
 	if norm < 0 {
 		return 0
@@ -37,30 +37,30 @@ func NormalizeOffset(avg uint16, offset int) uint16 {
 }
 
 func setSquare(t *terrain.Terrain, x uint16, y uint16, offset int, scale uint16) {
-	c, s := IncrementAverage(x+scale, y+scale, t, 0, 0)
-	c, s = IncrementAverage(x-scale, y-scale, t, c, s)
-	c, s = IncrementAverage(x+scale, y-scale, t, c, s)
-	c, s = IncrementAverage(x-scale, y+scale, t, c, s)
+	c, s := incrementAverage(x+scale, y+scale, t, 0, 0)
+	c, s = incrementAverage(x-scale, y-scale, t, c, s)
+	c, s = incrementAverage(x+scale, y-scale, t, c, s)
+	c, s = incrementAverage(x-scale, y+scale, t, c, s)
 
 	avg := uint16(s / c)
 
-	n := NormalizeOffset(avg, offset)
+	n := normalizeOffset(avg, offset)
 	t.SetHeight(x, y, n)
 }
 
 func setDiamond(t *terrain.Terrain, x uint16, y uint16, offset int, scale uint16) {
-	c, s := IncrementAverage(x, y+scale, t, 0, 0)
-	c, s = IncrementAverage(x, y-scale, t, c, s)
-	c, s = IncrementAverage(x+scale, y, t, c, s)
-	c, s = IncrementAverage(x-scale, y, t, c, s)
+	c, s := incrementAverage(x, y+scale, t, 0, 0)
+	c, s = incrementAverage(x, y-scale, t, c, s)
+	c, s = incrementAverage(x+scale, y, t, c, s)
+	c, s = incrementAverage(x-scale, y, t, c, s)
 
 	avg := uint16(s / c)
-	n := NormalizeOffset(avg, offset)
+	n := normalizeOffset(avg, offset)
 
 	t.SetHeight(x, y, n)
 }
 
-func GenerateTerrain(t *terrain.Terrain, roughness float32, x0y0 uint16, xmaxy0 uint16, x0ymax uint16, xmaxymax uint16) {
+func generateTerrain(t *terrain.Terrain, roughness float32, x0y0 uint16, xmaxy0 uint16, x0ymax uint16, xmaxymax uint16) {
 	maxDimension := t.Max - 1
 	offsetMultiplier := int(math.MaxUint16)
 	t.SetHeight(0, 0, x0y0)
@@ -104,6 +104,6 @@ func GenerateTerrain(t *terrain.Terrain, roughness float32, x0y0 uint16, xmaxy0 
 
 func (d *DiamondSquareGenerator) Generate() (*terrain.Terrain, error) {
 	t := terrain.New(uint16(d.scale), math.MaxUint16)
-	GenerateTerrain(t, d.roughness, uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()))
+	generateTerrain(t, d.roughness, uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()))
 	return t, nil
 }
