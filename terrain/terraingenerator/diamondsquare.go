@@ -60,7 +60,7 @@ func setDiamond(t *terrain.Terrain, x uint16, y uint16, offset int, scale uint16
 	t.SetHeight(x, y, n)
 }
 
-func Generate(t *terrain.Terrain, roughness float32, x0y0 uint16, xmaxy0 uint16, x0ymax uint16, xmaxymax uint16) {
+func GenerateTerrain(t *terrain.Terrain, roughness float32, x0y0 uint16, xmaxy0 uint16, x0ymax uint16, xmaxymax uint16) {
 	maxDimension := t.Max - 1
 	offsetMultiplier := int(math.MaxUint16)
 	t.SetHeight(0, 0, x0y0)
@@ -100,4 +100,10 @@ func Generate(t *terrain.Terrain, roughness float32, x0y0 uint16, xmaxy0 uint16,
 		offsetMultiplier /= 2
 		sideLength = halfSize
 	}
+}
+
+func (d *DiamondSquareGenerator) Generate() (*terrain.Terrain, error) {
+	t := terrain.New(uint16(d.scale), math.MaxUint16)
+	GenerateTerrain(t, d.roughness, uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()))
+	return t, nil
 }

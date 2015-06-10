@@ -137,6 +137,6 @@ func BenchmarkDiamondSquare(b *testing.B) {
 		ter.SetHeight(1024, 0, 30000)
 		ter.SetHeight(1024, 1024, 30000)
 
-		Generate(ter, 0.5, 30000, 30000, 30000, 30000)
+		GenerateTerrain(ter, 0.5, 30000, 30000, 30000, 30000)
 	}
 }
