@@ -12,8 +12,8 @@ func init() {
 func TestTerrainMaxSize(t *testing.T) {
 	ter := New(10, 65535)
 
-	if ter.max != 1025 {
-		t.Error("Expected 1025, got", ter.max)
+	if ter.Max != 1025 {
+		t.Error("Expected 1025, got", ter.Max)
 	}
 }
 
