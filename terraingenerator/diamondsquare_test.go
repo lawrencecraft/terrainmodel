@@ -2,7 +2,7 @@ package terraingenerator
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/lawrencecraft/terrainmodel/terrain"
+	terrain "github.com/lawrencecraft/terrainmodel"
 	"testing"
 )
 
