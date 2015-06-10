@@ -20,21 +20,14 @@ func TestTerrainMaxSize(t *testing.T) {
 func TestTerrainLayout(t *testing.T) {
 	ter := New(10, 65535)
 
-	if len(ter.layout) != 1025 {
+	if len(ter.layout) != 1025*1025 {
 		t.Error("Expected length 1025 but got", len(ter.layout))
-	}
-
-	for i := range ter.layout {
-		if len(ter.layout[i]) != 1025 {
-			t.Error("Expected length 1025 but got", len(ter.layout[i]), "on iteration", i)
-		}
 	}
 }
 
 func TestGetWhenInRange(t *testing.T) {
 	ter := New(10, 65535)
-	ter.layout[22][22] = 3252
-
+	ter.SetHeight(22, 22, 3252)
 	num, err := ter.GetHeight(22, 22)
 	if err != nil {
 		t.Errorf("Should not have produced an error")
