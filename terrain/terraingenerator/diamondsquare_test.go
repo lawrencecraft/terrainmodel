@@ -1,21 +1,20 @@
-package terrain
+package terraingenerator
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"runtime"
-	"sync"
+	"github.com/lawrencecraft/terrainmodel/terrain"
 	"testing"
 )
 
 func TestDiamondStep(t *testing.T) {
-	ter := New(1, 65535)
+	ter := terrain.New(1, 65535)
 
 	ter.SetHeight(0, 1, 1)
 	ter.SetHeight(1, 0, 3)
 	ter.SetHeight(2, 1, 0)
 	ter.SetHeight(1, 2, 4)
 
-	SetDiamond(ter, 1, 1, 0, 1)
+	setDiamond(ter, 1, 1, 0, 1)
 
 	v, e := ter.GetHeight(1, 1)
 
@@ -29,13 +28,13 @@ func TestDiamondStep(t *testing.T) {
 }
 
 func TestDiamondStepAtBounds(t *testing.T) {
-	ter := New(1, 65535)
+	ter := terrain.New(1, 65535)
 
 	ter.SetHeight(0, 0, 2)
 	ter.SetHeight(0, 1, 0)
 	ter.SetHeight(1, 1, 4)
 
-	SetDiamond(ter, 1, 0, 0, 1)
+	setDiamond(ter, 1, 0, 0, 1)
 
 	v, e := ter.GetHeight(1, 0)
 
@@ -48,13 +47,13 @@ func TestDiamondStepAtBounds(t *testing.T) {
 	}
 }
 func TestDiamondStepWithOffset(t *testing.T) {
-	ter := New(1, 65535)
+	ter := terrain.New(1, 65535)
 
 	ter.SetHeight(0, 0, 2)
 	ter.SetHeight(0, 1, 0)
 	ter.SetHeight(1, 1, 4)
 
-	SetDiamond(ter, 1, 0, 2, 1)
+	setDiamond(ter, 1, 0, 2, 1)
 
 	v, e := ter.GetHeight(1, 0)
 
@@ -68,14 +67,14 @@ func TestDiamondStepWithOffset(t *testing.T) {
 }
 
 func TestSquareStep(t *testing.T) {
-	ter := New(1, 65535)
+	ter := terrain.New(1, 65535)
 
 	ter.SetHeight(0, 0, 1)
 	ter.SetHeight(2, 0, 3)
 	ter.SetHeight(0, 2, 0)
 	ter.SetHeight(2, 2, 4)
 
-	SetSquare(ter, 1, 1, 0, 1)
+	setSquare(ter, 1, 1, 0, 1)
 
 	v, e := ter.GetHeight(1, 1)
 
@@ -89,14 +88,14 @@ func TestSquareStep(t *testing.T) {
 }
 
 func TestSquareStepWithOffset(t *testing.T) {
-	ter := New(1, 65535)
+	ter := terrain.New(1, 65535)
 
 	ter.SetHeight(0, 0, 1)
 	ter.SetHeight(2, 0, 3)
 	ter.SetHeight(0, 2, 0)
 	ter.SetHeight(2, 2, 4)
 
-	SetSquare(ter, 1, 1, 2, 1)
+	setSquare(ter, 1, 1, 2, 1)
 
 	v, e := ter.GetHeight(1, 1)
 
@@ -110,12 +109,12 @@ func TestSquareStepWithOffset(t *testing.T) {
 }
 
 func TestSquareStepAtBounds(t *testing.T) {
-	ter := New(2, 65535)
+	ter := terrain.New(2, 65535)
 
 	ter.SetHeight(2, 1, 2)
 	ter.SetHeight(0, 1, 0)
 
-	SetSquare(ter, 1, 0, 0, 1)
+	setSquare(ter, 1, 0, 0, 1)
 
 	v, e := ter.GetHeight(1, 0)
 
@@ -131,7 +130,7 @@ func TestSquareStepAtBounds(t *testing.T) {
 func BenchmarkDiamondSquare(b *testing.B) {
 	log.SetLevel(log.InfoLevel)
 	for i := 0; i < b.N; i++ {
-		ter := New(10, 65535)
+		ter := terrain.New(10, 65535)
 
 		ter.SetHeight(0, 0, 30000)
 		ter.SetHeight(0, 1024, 30000)

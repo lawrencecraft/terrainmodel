@@ -1,7 +1,8 @@
-package terrain
+package terraingenerator
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/lawrencecraft/terrainmodel/terrain"
 	"math"
 	"math/rand"
 	"time"
@@ -19,7 +20,7 @@ func NewDiamondSquareGenerator(roughness float32, x int, y int) *DiamondSquareGe
 	return &DiamondSquareGenerator{x: x, y: y, scale: scale, roughness: roughness}
 }
 
-func IncrementAverage(x uint16, y uint16, t *Terrain, currentCount int, currentSum int) (int, int) {
+func IncrementAverage(x uint16, y uint16, t *terrain.Terrain, currentCount int, currentSum int) (int, int) {
 	v, e := t.GetHeight(x, y)
 	if e == nil {
 		return currentCount + 1, currentSum + int(v)
@@ -35,7 +36,7 @@ func NormalizeOffset(avg uint16, offset int) uint16 {
 	return uint16(norm)
 }
 
-func SetSquare(t *Terrain, x uint16, y uint16, offset int, scale uint16) {
+func setSquare(t *terrain.Terrain, x uint16, y uint16, offset int, scale uint16) {
 	c, s := IncrementAverage(x+scale, y+scale, t, 0, 0)
 	c, s = IncrementAverage(x-scale, y-scale, t, c, s)
 	c, s = IncrementAverage(x+scale, y-scale, t, c, s)
@@ -47,7 +48,7 @@ func SetSquare(t *Terrain, x uint16, y uint16, offset int, scale uint16) {
 	t.SetHeight(x, y, n)
 }
 
-func SetDiamond(t *Terrain, x uint16, y uint16, offset int, scale uint16) {
+func setDiamond(t *terrain.Terrain, x uint16, y uint16, offset int, scale uint16) {
 	c, s := IncrementAverage(x, y+scale, t, 0, 0)
 	c, s = IncrementAverage(x, y-scale, t, c, s)
 	c, s = IncrementAverage(x+scale, y, t, c, s)
@@ -59,8 +60,8 @@ func SetDiamond(t *Terrain, x uint16, y uint16, offset int, scale uint16) {
 	t.SetHeight(x, y, n)
 }
 
-func Generate(t *Terrain, roughness float32, x0y0 uint16, xmaxy0 uint16, x0ymax uint16, xmaxymax uint16) {
-	maxDimension := t.max - 1
+func Generate(t *terrain.Terrain, roughness float32, x0y0 uint16, xmaxy0 uint16, x0ymax uint16, xmaxymax uint16) {
+	maxDimension := t.Max - 1
 	offsetMultiplier := int(math.MaxUint16)
 	t.SetHeight(0, 0, x0y0)
 	t.SetHeight(maxDimension, 0, xmaxy0)
@@ -78,20 +79,20 @@ func Generate(t *Terrain, roughness float32, x0y0 uint16, xmaxy0 uint16, x0ymax 
 		log.Debug("Size ", sideLength, " halfsize:", halfSize)
 
 		// Square
-		for x := halfSize; x < t.max; x += sideLength {
-			for y := halfSize; y < t.max; y += sideLength {
+		for x := halfSize; x < t.Max; x += sideLength {
+			for y := halfSize; y < t.Max; y += sideLength {
 				offset := int(rand.Float32()*float32(offsetMultiplier)*2.0) - offsetMultiplier
 				log.Debug("Setting square: ", x, ",", y, "with offset", offset)
-				SetSquare(t, x, y, offset, halfSize)
+				setSquare(t, x, y, offset, halfSize)
 			}
 		}
 
 		// Diamond
-		for y := uint16(0); y < t.max; y += halfSize {
-			for x := (y + halfSize) % sideLength; x < t.max; x += sideLength {
+		for y := uint16(0); y < t.Max; y += halfSize {
+			for x := (y + halfSize) % sideLength; x < t.Max; x += sideLength {
 				offset := int(rand.Float32()*float32(offsetMultiplier)*2.0) - offsetMultiplier
 				log.Debug("Setting diamond: ", x, ",", y, " with offset ", offset)
-				SetDiamond(t, x, y, offset, halfSize)
+				setDiamond(t, x, y, offset, halfSize)
 			}
 		}
 

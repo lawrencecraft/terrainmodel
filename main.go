@@ -7,6 +7,7 @@ import (
 	"image"
 	"image/color"
 	"os"
+	"terrain"
 )
 
 func main() {
@@ -34,7 +35,7 @@ func main() {
 		return // Unnecessary, but do so just in case the former one didn't
 	}
 
-	t := InitializeTerrain(uint16(*i), 65535)
+	t := terrain.New(uint16(*i), 65535)
 
 	log.Info("Generating terrain of size ", t.max)
 	t.Generate(0.3, 32767, 32767, 32767, 32767)
