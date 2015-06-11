@@ -7,7 +7,7 @@ import (
 )
 
 func TestDiamondStep(t *testing.T) {
-	ter := terrain.New(1, 65535)
+	ter := terrain.New(3, 3, 65535)
 
 	ter.SetHeight(0, 1, 1)
 	ter.SetHeight(1, 0, 3)
@@ -28,7 +28,7 @@ func TestDiamondStep(t *testing.T) {
 }
 
 func TestDiamondStepAtBounds(t *testing.T) {
-	ter := terrain.New(1, 65535)
+	ter := terrain.New(3, 3, 65535)
 
 	ter.SetHeight(0, 0, 2)
 	ter.SetHeight(0, 1, 0)
@@ -47,7 +47,7 @@ func TestDiamondStepAtBounds(t *testing.T) {
 	}
 }
 func TestDiamondStepWithOffset(t *testing.T) {
-	ter := terrain.New(1, 65535)
+	ter := terrain.New(3, 3, 65535)
 
 	ter.SetHeight(0, 0, 2)
 	ter.SetHeight(0, 1, 0)
@@ -67,7 +67,7 @@ func TestDiamondStepWithOffset(t *testing.T) {
 }
 
 func TestSquareStep(t *testing.T) {
-	ter := terrain.New(1, 65535)
+	ter := terrain.New(3, 3, 65535)
 
 	ter.SetHeight(0, 0, 1)
 	ter.SetHeight(2, 0, 3)
@@ -88,7 +88,7 @@ func TestSquareStep(t *testing.T) {
 }
 
 func TestSquareStepWithOffset(t *testing.T) {
-	ter := terrain.New(1, 65535)
+	ter := terrain.New(3, 3, 65535)
 
 	ter.SetHeight(0, 0, 1)
 	ter.SetHeight(2, 0, 3)
@@ -109,7 +109,7 @@ func TestSquareStepWithOffset(t *testing.T) {
 }
 
 func TestSquareStepAtBounds(t *testing.T) {
-	ter := terrain.New(2, 65535)
+	ter := terrain.New(5, 5, 65535)
 
 	ter.SetHeight(2, 1, 2)
 	ter.SetHeight(0, 1, 0)
@@ -129,27 +129,31 @@ func TestSquareStepAtBounds(t *testing.T) {
 
 func BenchmarkDiamondSquare(b *testing.B) {
 	log.SetLevel(log.InfoLevel)
+	d := NewDiamondSquareGenerator(0.5, 1025, 1025)
 	for i := 0; i < b.N; i++ {
-		ter := terrain.New(10, 65535)
-
-		ter.SetHeight(0, 0, 30000)
-		ter.SetHeight(0, 1024, 30000)
-		ter.SetHeight(1024, 0, 30000)
-		ter.SetHeight(1024, 1024, 30000)
-
-		generateTerrain(ter, 0.5, 30000, 30000, 30000, 30000)
+		d.Generate()
 	}
 }
 
 func TestScaleIsSetCorrectly(t *testing.T) {
-	g := NewDiamondSquareGenerator(0.5, 1000, 1000)
-	if g.scale != 10 {
-		t.Error("Expected 10 but got ", g.scale)
+	scale := getScale(1000, 1000)
+	if scale != 10 {
+		t.Error("Expected 10 but got ", scale)
 	}
 }
 
-func TestDiamondSquareGenerator(t *testing.T) {
-	g := NewDiamondSquareGenerator(0.5, 1000, 1000)
-	ter := g.Generate()
+func TestScaleWorksAtBoundaries(t *testing.T) {
+	scale := getScale(1025, 1025)
+	if scale != 10 {
+		t.Error("Exptected 10 but got ", scale)
+	}
+}
 
+func TestCanGenerateAtBounds(t *testing.T) {
+	d := NewDiamondSquareGenerator(0.5, 5, 5)
+	_, err := d.Generate()
+
+	if err != nil {
+		t.Error("Got error generating: ", err)
+	}
 }

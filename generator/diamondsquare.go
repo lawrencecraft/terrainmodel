@@ -9,15 +9,13 @@ import (
 )
 
 type DiamondSquareGenerator struct {
-	roughness float32
-	scale     int
-	x         int
-	y         int
+	Roughness float32
+	X         int
+	Y         int
 }
 
 func NewDiamondSquareGenerator(roughness float32, x int, y int) *DiamondSquareGenerator {
-	scale := int(math.Ceil(math.Log2(float64(x - 1))))
-	return &DiamondSquareGenerator{x: x, y: y, scale: scale, roughness: roughness}
+	return &DiamondSquareGenerator{X: x, Y: y, Roughness: roughness}
 }
 
 func incrementAverage(x uint16, y uint16, t *terrain.Terrain, currentCount int, currentSum int) (int, int) {
@@ -61,7 +59,7 @@ func setDiamond(t *terrain.Terrain, x uint16, y uint16, offset int, scale uint16
 }
 
 func generateTerrain(t *terrain.Terrain, roughness float32, x0y0 uint16, xmaxy0 uint16, x0ymax uint16, xmaxymax uint16) {
-	maxDimension := t.Max - 1
+	maxDimension := t.X - 1 // At this point, we are 100% sure the terrain will be square
 	offsetMultiplier := int(math.MaxUint16)
 	t.SetHeight(0, 0, x0y0)
 	t.SetHeight(maxDimension, 0, xmaxy0)
@@ -79,8 +77,8 @@ func generateTerrain(t *terrain.Terrain, roughness float32, x0y0 uint16, xmaxy0 
 		log.Debug("Size ", sideLength, " halfsize:", halfSize)
 
 		// Square
-		for x := halfSize; x < t.Max; x += sideLength {
-			for y := halfSize; y < t.Max; y += sideLength {
+		for x := halfSize; x < t.X; x += sideLength {
+			for y := halfSize; y < t.Y; y += sideLength {
 				offset := int(rand.Float32()*float32(offsetMultiplier)*2.0) - offsetMultiplier
 				log.Debug("Setting square: ", x, ",", y, "with offset", offset)
 				setSquare(t, x, y, offset, halfSize)
@@ -88,8 +86,8 @@ func generateTerrain(t *terrain.Terrain, roughness float32, x0y0 uint16, xmaxy0 
 		}
 
 		// Diamond
-		for y := uint16(0); y < t.Max; y += halfSize {
-			for x := (y + halfSize) % sideLength; x < t.Max; x += sideLength {
+		for y := uint16(0); y < t.Y; y += halfSize {
+			for x := (y + halfSize) % sideLength; x < t.X; x += sideLength {
 				offset := int(rand.Float32()*float32(offsetMultiplier)*2.0) - offsetMultiplier
 				log.Debug("Setting diamond: ", x, ",", y, " with offset ", offset)
 				setDiamond(t, x, y, offset, halfSize)
@@ -102,9 +100,28 @@ func generateTerrain(t *terrain.Terrain, roughness float32, x0y0 uint16, xmaxy0 
 	}
 }
 
+func getScale(x int, y int) int {
+	maxDimension := x
+	if y > x {
+		maxDimension = y
+	}
+	return int(math.Ceil(math.Log2(float64(maxDimension - 1))))
+}
+
 func (d *DiamondSquareGenerator) Generate() (*terrain.Terrain, error) {
-	t := terrain.New(uint16(d.scale), math.MaxUint16)
-	generateTerrain(t, d.roughness, uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()))
+	scale := getScale(d.X, d.Y)
+	squareDimension := uint16(math.Exp2(float64(scale)))
+	operatingTerrain := terrain.New(squareDimension, squareDimension, math.MaxUint16)
+	generateTerrain(operatingTerrain, d.Roughness, uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()))
+	// Special case: if the generated terrain is the same as what is requested, return it
+	if d.X == int(squareDimension) && d.Y == int(squareDimension) {
+		return operatingTerrain, nil
+	}
 	// Copy to a new terrain of the requested size
-	return t, nil
+	returningTerrain := terrain.New(uint16(d.X), uint16(d.Y), operatingTerrain.MaxHeight)
+	err := operatingTerrain.CopyTo(returningTerrain, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+	return returningTerrain, nil
 }
