@@ -1,4 +1,4 @@
-package terraingenerator
+package generator
 
 import (
 	log "github.com/Sirupsen/logrus"
@@ -139,4 +139,17 @@ func BenchmarkDiamondSquare(b *testing.B) {
 
 		generateTerrain(ter, 0.5, 30000, 30000, 30000, 30000)
 	}
+}
+
+func TestScaleIsSetCorrectly(t *testing.T) {
+	g := NewDiamondSquareGenerator(0.5, 1000, 1000)
+	if g.scale != 10 {
+		t.Error("Expected 10 but got ", g.scale)
+	}
+}
+
+func TestDiamondSquareGenerator(t *testing.T) {
+	g := NewDiamondSquareGenerator(0.5, 1000, 1000)
+	ter := g.Generate()
+
 }

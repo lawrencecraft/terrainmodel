@@ -1,7 +1,7 @@
-package terraingenerator
+package generator
 
 import "github.com/lawrencecraft/terrainmodel"
 
-type TerrainGenerator interface {
+type Generator interface {
 	Generate() (*terrain.Terrain, error)
 }

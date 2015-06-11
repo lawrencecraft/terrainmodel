@@ -1,4 +1,4 @@
-package terraingenerator
+package generator
 
 import (
 	log "github.com/Sirupsen/logrus"
@@ -105,5 +105,6 @@ func generateTerrain(t *terrain.Terrain, roughness float32, x0y0 uint16, xmaxy0 
 func (d *DiamondSquareGenerator) Generate() (*terrain.Terrain, error) {
 	t := terrain.New(uint16(d.scale), math.MaxUint16)
 	generateTerrain(t, d.roughness, uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()))
+	// Copy to a new terrain of the requested size
 	return t, nil
 }
