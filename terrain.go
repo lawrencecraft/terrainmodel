@@ -1,8 +1,10 @@
 package terrain
 
 import (
+	"encoding/binary"
 	"errors"
 	"fmt"
+	"io"
 )
 
 type Terrain struct {
@@ -65,4 +67,17 @@ func (t *Terrain) CopyTo(destination *Terrain, xOffset uint16, yOffset uint16) e
 	}
 
 	return nil
+}
+
+func (t *Terrain) Iterate(fn func(uint16, uint16, uint16)) {
+	for x := uint16(0); x < t.X; x++ {
+		for y := uint16(0); y < t.Y; y++ {
+			fn(x, y, t.layout[t.getIndex(x, y)])
+		}
+	}
+}
+
+func (t *Terrain) Flush(writer io.Writer) error {
+	err := binary.Write(writer, binary.LittleEndian, t.layout)
+	return err
 }
