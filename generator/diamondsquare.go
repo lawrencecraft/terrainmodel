@@ -79,7 +79,7 @@ func generateTerrain(t *terrain.Terrain, roughness float32, x0y0 uint16, xmaxy0 
 		// Square
 		for x := halfSize; x < t.X; x += sideLength {
 			for y := halfSize; y < t.Y; y += sideLength {
-				offset := int(rand.Float32()*float32(offsetMultiplier)*2.0) - offsetMultiplier
+				offset := int(float32(int(rand.Float32()*float32(offsetMultiplier)*2.0)-offsetMultiplier) * roughness)
 				log.Debug("Setting square: ", x, ",", y, "with offset", offset)
 				setSquare(t, x, y, offset, halfSize)
 			}
@@ -110,17 +110,20 @@ func getScale(x int, y int) int {
 
 func (d *DiamondSquareGenerator) Generate() (*terrain.Terrain, error) {
 	scale := getScale(d.X, d.Y)
-	squareDimension := uint16(math.Exp2(float64(scale)))
+	squareDimension := uint16(math.Exp2(float64(scale))) + 1 // Must be 2^n + 1 -- use the minimum size we calculated previously
+	log.Debug("Generating square of dimension ", squareDimension)
 	operatingTerrain := terrain.New(squareDimension, squareDimension, math.MaxUint16)
 	generateTerrain(operatingTerrain, d.Roughness, uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()), uint16(math.MaxUint16*rand.Float32()))
 	// Special case: if the generated terrain is the same as what is requested, return it
 	if d.X == int(squareDimension) && d.Y == int(squareDimension) {
+		log.Debug("Shortcutting copy - no need as requested terrain is square")
 		return operatingTerrain, nil
 	}
 	// Copy to a new terrain of the requested size
 	returningTerrain := terrain.New(uint16(d.X), uint16(d.Y), operatingTerrain.MaxHeight)
 	err := operatingTerrain.CopyTo(returningTerrain, 0, 0)
 	if err != nil {
+		log.Debug("diamondsquare.go - encountered error on terrain copy: ", err)
 		return nil, err
 	}
 	return returningTerrain, nil
