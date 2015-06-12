@@ -127,9 +127,17 @@ func TestSquareStepAtBounds(t *testing.T) {
 	}
 }
 
-func BenchmarkDiamondSquare(b *testing.B) {
+func BenchmarkSC4DiamondSquare(b *testing.B) {
 	log.SetLevel(log.InfoLevel)
 	d := NewDiamondSquareGenerator(0.5, 1025, 1025)
+	for i := 0; i < b.N; i++ {
+		d.Generate()
+	}
+}
+
+func BenchmarkCSDiamondSquare(b *testing.B) {
+	log.SetLevel(log.InfoLevel)
+	d := NewDiamondSquareGenerator(0.5, 1028, 1028)
 	for i := 0; i < b.N; i++ {
 		d.Generate()
 	}
