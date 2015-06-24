@@ -15,5 +15,5 @@ func NewPngDrawer(writer io.Writer) *PngDrawer {
 }
 
 func (pngd *PngDrawer) Draw(t *terrain.Terrain) error {
-	return png.Encode(pngd.Writer, toGrayscaleImage(t))
+	return png.Encode(pngd.Writer, toGrayscale16Image(t))
 }
